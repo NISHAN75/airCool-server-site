@@ -43,8 +43,12 @@ async function run(){
  try{
     await client.connect();
     const productsCollection = client.db('inventory').collection('product');
-    const ordersCollection  = client.db('inventory').collection('orders');
-    const blogsCollection = client.db('blogs').collection('blog');
+    const ordersCollection = client.db("inventory").collection("orders");
+    const usersCollection = client.db("inventory").collection("user");
+    const paymentCollection = client.db("inventory").collection("payment");
+    const reviewsCollection = client.db("inventory").collection("reviews");
+    const profileCollection = client.db("inventory").collection("profile");
+    const blogsCollection = client.db('inventory').collection('blog');
 
     
 
@@ -69,9 +73,12 @@ async function run(){
       const product = await productsCollection.findOne(query);
       res.send(product)
     });
-    app.get("/user", verifyJWT, async (req, res) => {
-      const users = await usersCollection.find().toArray();
-      res.send(users);
+    // reviews area
+    app.get("/reviews", async(req,res) =>{
+      const query = {};
+      const cursor = reviewsCollection.find(query);
+      const reviews = await cursor.toArray();
+      res.send(reviews);
     });
     // post working
     app.post("/orders", async (req, res) => {
@@ -83,6 +90,13 @@ async function run(){
       }
       const result = await ordersCollection.insertOne(orders);
       res.send({ success: true, result });
+    });
+    // review area
+    
+    app.post("/reviews", async (req, res) => {
+      const reviews = req.body;
+      const result = await reviewsCollection.insertOne(reviews);
+      res.send(result);
     });
       
 
