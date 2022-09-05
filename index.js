@@ -193,6 +193,14 @@ async function run() {
       const result = await ordersCollection.deleteOne(filter);
       res.send(result)
     });
+    // all Order
+
+    app.delete('/allOrders/:id',verifyJwt, async(req,res)=>{
+      const id = req.params.id;
+      const filter={_id: ObjectId(id)};
+      const result = await ordersCollection.deleteOne(filter);
+      res.send(result)
+    });
 
 
   }
