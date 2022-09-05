@@ -91,9 +91,17 @@ async function run() {
 
     // user area
 
-    app.get("/users", verifyJwt, async (req, res) => {
+    app.get("/users",async (req, res) => {
       const users = await usersCollection.find().toArray();
       res.send(users);
+    });
+    // all order
+    
+    app.get("/allOrders", verifyJwt, async (req, res) => {
+      const query = {};
+      const cursor = ordersCollection.find(query);
+      const orders = await cursor.toArray();
+      res.send(orders);
     });
     // post working
     app.post("/orders", async (req, res) => {
@@ -121,6 +129,14 @@ async function run() {
       res.send(result);
     });
 
+    // admin area
+    app.get('/admin/:email', async(req,res) =>{
+      const email = req.params.email;
+      const user = await usersCollection.findOne({email: email});
+      const isAdmin = user.role=== 'admin';
+      res.send({admin: isAdmin})
+    });
+
      // put working
 
     //  user area
@@ -146,7 +162,7 @@ async function run() {
     });
 
     // admin area
-    app.put("/user/admin/:email", verifyJWT, async (req, res) => {
+    app.put("/user/admin/:email", verifyJwt, async (req, res) => {
       const email = req.params.email;
       const requester = req.decoded.email;
       const requesterAccount = await usersCollection.findOne({
