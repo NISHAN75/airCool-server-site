@@ -91,7 +91,7 @@ async function run() {
 
     // user area
 
-    app.get("/users",async (req, res) => {
+    app.get("/users",verifyJwt,async (req, res) => {
       const users = await usersCollection.find().toArray();
       res.send(users);
     });
