@@ -184,6 +184,15 @@ async function run() {
 
     // Delete  working
 
+    // products area
+
+    app.delete('/products/:id',verifyJwt, async(req,res)=>{
+      const id = req.params.id;
+      const filter={_id: ObjectId(id)};
+      const result = await productsCollection.deleteOne(filter);
+      res.send(result)
+    });
+
     // order area
 
     app.delete('/orders',verifyJwt, async(req,res)=>{
