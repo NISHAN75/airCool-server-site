@@ -4,6 +4,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const Stripe = require('Stripe')(process.env.STRIPE_SECRET_KEY)
 const { reset } = require("nodemon");
 
 
@@ -88,6 +89,12 @@ async function run() {
         return res.status(403).send({ message: "Forbidden access" });
       }
     });
+    app.get('/orders/:id', verifyJwt, async(req,res)=>{
+      const id = req.params.id;
+      const query= {_id: ObjectId(id)};
+      const orders = await ordersCollection.findOne(query);
+      res.send(orders);
+    });
 
     // user area
 
@@ -104,6 +111,21 @@ async function run() {
       res.send(orders);
     });
     // post working
+
+    // payment area
+
+    app.post('/create-payment-intent', verifyJwt, async(req,res)=>{
+      const order=req.body;
+      const amount=order.pay*100;
+      const paymentIntent = await Stripe.paymentIntents.create({
+        amount:amount,
+        currency:'usd',
+       payment_method_types:['card']
+      })
+      res.send({clientSecret: paymentIntent.client_secret})
+    });
+
+    // orders
     app.post("/orders", async (req, res) => {
       const orders = req.body;
       const query = { partName: orders.partName, userEmail: orders.userEmail };
@@ -162,7 +184,7 @@ async function run() {
     });
 
     // admin area
-    app.put("/user/admin/:email", verifyJwt, async (req, res) => {
+    app.put("/users/admin/:email", verifyJwt, async (req, res) => {
       const email = req.params.email;
       const requester = req.decoded.email;
       const requesterAccount = await usersCollection.findOne({
@@ -182,6 +204,39 @@ async function run() {
       }
     });
 
+    // patch working
+
+    app.patch('/orders/:id', verifyJwt,async(req,res)=>{
+      const id = req.params.id;
+      const payment=req.body;
+      const filter={_id: ObjectId(id)};
+      const updateDoc={
+        $set:{
+          paid: true,
+          transactionId: payment.transactionId,
+        }
+      }
+
+      const updatedOrders= await ordersCollection.updateOne(filter,updateDoc);
+      const result= await paymentCollection.insertOne(payment);
+      res.send(updateDoc); 
+    });
+    app.patch('/orders/:id', verifyJwt,async(req,res)=>{
+      const id = req.params.id;
+      const payment=req.body;
+      const filter={_id: ObjectId(id)};
+      const updateDoc={
+        $set:{
+          paid: true,
+          transactionId: payment.transactionId,
+        }
+      }
+
+      const updatedOrders= await ordersCollection.updateOne(filter,updateDoc);
+      const result= await paymentCollection.insertOne(payment);
+      res.send(updateDoc); 
+    })
+
     // Delete  working
 
     // products area
@@ -197,7 +252,6 @@ async function run() {
 
     app.delete('/orders',verifyJwt, async(req,res)=>{
       const email = req.query.email;
-      console.log(email);
       const filter= {userEmail:email};
       const result = await ordersCollection.deleteOne(filter);
       res.send(result)
@@ -208,6 +262,15 @@ async function run() {
       const id = req.params.id;
       const filter={_id: ObjectId(id)};
       const result = await ordersCollection.deleteOne(filter);
+      res.send(result)
+    });
+
+    // user
+
+    app.delete('/users/:email', verifyJwt, async(req,res)=>{
+      const email = req.params.email;
+      const filter= {email:email};
+      const result = await usersCollection.deleteOne(filter);
       res.send(result)
     });
 
