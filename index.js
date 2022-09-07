@@ -117,6 +117,22 @@ async function run() {
       const orders = await cursor.toArray();
       res.send(orders);
     });
+
+    // blog
+
+    app.get("/blog", async (req, res) => {
+        const query = {};
+        const cursor = blogsCollection.find(query);
+        const blogs = await cursor.toArray();
+        res.send(blogs);
+      });
+    
+    app.get('/blog/:id', async(req,res)=>{
+      const id=req.params.id;
+      const query={_id: ObjectId(id)};
+      const blog = await blogsCollection.findOne(query);
+      res.send(blog)
+    });
     // post working
 
     // payment area
