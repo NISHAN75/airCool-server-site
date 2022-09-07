@@ -95,10 +95,12 @@ async function run() {
       const orders = await ordersCollection.findOne(query);
       res.send(orders);
     });
+    // profile
     app.get('/profile/:email', async(req,res) =>{
       const email = req.params.email;
       const profile = await profileCollection.findOne({email: email});
       res.send(profile);
+      console.log(profile)
     });
 
     // user area
@@ -219,7 +221,7 @@ async function run() {
     app.patch('/orders/:id', verifyJwt,async(req,res)=>{
       const id = req.params.id;
       const payment=req.body;
-      console.log(payment)
+   
       const filter={_id: ObjectId(id)};
       const updateDoc={
         $set:{
