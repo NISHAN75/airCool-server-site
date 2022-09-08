@@ -100,7 +100,6 @@ async function run() {
       const email = req.params.email;
       const profile = await profileCollection.findOne({email: email});
       res.send(profile);
-      console.log(profile)
     });
 
     // user area
