@@ -33,8 +33,6 @@ function verifyJwt(req, res, next) {
 
 }
 
-// airUser
-// gfZCXs3e58hppZUd
 
 
 
